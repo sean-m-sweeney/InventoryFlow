@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InventoryFlow Setup Guide</title>
+    <style>
+        :root {
+            --bg-primary: #1e1e2e;
+            --bg-secondary: #27273a;
+            --bg-tertiary: #2a2a3e;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --accent: #7c3aed;
+            --accent-hover: #6d28d9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: #3f3f46;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 40px 0 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 .step-number {
+            background: var(--accent);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin: 25px 0 12px;
+            color: var(--text-primary);
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+
+        .card.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .card.info {
+            border-left: 4px solid var(--accent);
+        }
+
+        .card.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        ol, ul {
+            margin: 15px 0 15px 25px;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        code {
+            background: var(--bg-tertiary);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #a78bfa;
+        }
+
+        pre {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
+
+        .screenshot-placeholder {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            margin: 20px 0;
+        }
+
+        .scope-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .scope-table th,
+        .scope-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .scope-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .scope-table td {
+            color: var(--text-secondary);
+        }
+
+        .scope-table code {
+            color: var(--success);
+        }
+
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .checklist li {
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        .requirements {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .requirement-item {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .requirement-item .icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .requirement-item .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>InventoryFlow Setup Guide</h1>
+            <p>Connect your Shopify store in minutes</p>
+        </header>
+
+        <section>
+            <div class="card info">
+                <div class="card-title">What You'll Need</div>
+                <div class="requirements">
+                    <div class="requirement-item">
+                        <div class="icon">🏪</div>
+                        <div class="label">Shopify Store</div>
+                    </div>
+                    <div class="requirement-item">
+                        <div class="icon">👤</div>
+                        <div class="label">Admin Access</div>
+                    </div>
+                    <div class="requirement-item">
+                        <div class="icon">⏱️</div>
+                        <div class="label">5-10 Minutes</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2><span class="step-number">1</span> Enable Custom App Development</h2>
+            <p>First, you need to enable custom app development in your Shopify store if it isn't already enabled.</p>
+
+            <ol>
+                <li>Log in to your <strong>Shopify Admin</strong> panel</li>
+                <li>Click <strong>Settings</strong> (gear icon) in the bottom-left corner</li>
+                <li>Select <strong>Apps and sales channels</strong> from the menu</li>
+                <li>Click <strong>Develop apps</strong> at the top of the page</li>
+                <li>If prompted, click <strong>Allow custom app development</strong></li>
+                <li>Read the warning and click <strong>Allow custom app development</strong> to confirm</li>
+            </ol>
+
+            <div class="card warning">
+                <div class="card-title">⚠️ Store Owner Required</div>
+                <p>Only the store owner can enable custom app development. If you're a staff member, ask the store owner to complete this step or grant you the necessary permissions.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2><span class="step-number">2</span> Create a Custom App</h2>
+            <p>Now create a dedicated app for InventoryFlow to connect securely.</p>
+
+            <ol>
+                <li>From the <strong>Develop apps</strong> page, click <strong>Create an app</strong></li>
+                <li>Enter an app name: <code>InventoryFlow</code> (or any name you prefer)</li>
+                <li>Select the app developer (usually yourself)</li>
+                <li>Click <strong>Create app</strong></li>
+            </ol>
+        </section>
+
+        <section>
+            <h2><span class="step-number">3</span> Configure API Permissions</h2>
+            <p>Grant the app permission to read your product and inventory data.</p>
+
+            <ol>
+                <li>In your new app, click <strong>Configure Admin API scopes</strong></li>
+                <li>Search for and enable the following scopes:</li>
+            </ol>
+
+            <table class="scope-table">
+                <thead>
+                    <tr>
+                        <th>Scope</th>
+                        <th>Permission</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>read_products</code></td>
+                        <td>Read products</td>
+                        <td>View product names, images, SKUs</td>
+                    </tr>
+                    <tr>
+                        <td><code>read_inventory</code></td>
+                        <td>Read inventory</td>
+                        <td>View stock levels at all locations</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <ol start="3">
+                <li>Click <strong>Save</strong> to confirm the permissions</li>
+            </ol>
+
+            <div class="card info">
+                <div class="card-title">💡 Read-Only Access</div>
+                <p>InventoryFlow only needs read access. It cannot modify your products or inventory, keeping your store data safe.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2><span class="step-number">4</span> Install the App & Get Your Token</h2>
+            <p>Install the app to your store and retrieve your access credentials.</p>
+
+            <ol>
+                <li>Click the <strong>API credentials</strong> tab</li>
+                <li>In the "Access tokens" section, click <strong>Install app</strong></li>
+                <li>Review the permissions and click <strong>Install</strong></li>
+                <li>Click <strong>Reveal token once</strong> to display your Admin API access token</li>
+                <li><strong>Copy the token immediately</strong> — it starts with <code>shpat_</code></li>
+            </ol>
+
+            <div class="card warning">
+                <div class="card-title">🔐 Important: Save Your Token Now</div>
+                <p>Shopify only shows the access token <strong>once</strong>. Copy it immediately and paste it into InventoryFlow. If you lose it, you'll need to uninstall and reinstall the app to generate a new token.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2><span class="step-number">5</span> Connect InventoryFlow</h2>
+            <p>Enter your credentials in the InventoryFlow application.</p>
+
+            <ol>
+                <li>Open <strong>InventoryFlow</strong></li>
+                <li>On the setup screen, enter:
+                    <ul>
+                        <li><strong>Store Domain:</strong> Your store's URL (e.g., <code>my-store.myshopify.com</code>)</li>
+                        <li><strong>Admin API Access Token:</strong> The token you copied (starts with <code>shpat_</code>)</li>
+                    </ul>
+                </li>
+                <li>Create a <strong>4-digit PIN</strong> to secure the application</li>
+                <li>Confirm your PIN and click <strong>Complete Setup</strong></li>
+            </ol>
+
+            <div class="card success">
+                <div class="card-title">✅ You're All Set!</div>
+                <p>InventoryFlow will connect to your store and begin syncing your inventory. Use the Sync button anytime to refresh the data.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2><span class="step-number">6</span> Finding Your Store Domain</h2>
+            <p>Not sure what your store domain is? Here's how to find it:</p>
+
+            <ul>
+                <li>Look at the URL when logged into Shopify Admin: <code>https://<strong>your-store</strong>.myshopify.com/admin</code></li>
+                <li>Or go to <strong>Settings → Domains</strong> to see your myshopify.com domain</li>
+            </ul>
+
+            <p>Enter just the domain part: <code>your-store.myshopify.com</code></p>
+            <p>You can also enter just <code>your-store</code> and InventoryFlow will add the rest automatically.</p>
+        </section>
+
+        <section>
+            <h2>Troubleshooting</h2>
+
+            <h3>❌ "API request failed" Error</h3>
+            <ul>
+                <li>Verify your store domain is spelled correctly</li>
+                <li>Make sure the access token was copied completely (no missing characters)</li>
+                <li>Check that the app is installed (not just created) in Shopify</li>
+            </ul>
+
+            <h3>❌ "Invalid credentials" Error</h3>
+            <ul>
+                <li>Regenerate your access token by uninstalling and reinstalling the custom app</li>
+                <li>Ensure you have the required API scopes enabled</li>
+            </ul>
+
+            <h3>❌ Products Not Showing</h3>
+            <ul>
+                <li>Verify your products have SKUs assigned</li>
+                <li>Check that products are set to "Active" status in Shopify</li>
+                <li>Click the Sync button to refresh data</li>
+            </ul>
+
+            <h3>❌ Forgot Your PIN</h3>
+            <p>Delete the <code>inventoryflow.db</code> file in the application directory and restart the app. You'll need to re-enter your Shopify credentials.</p>
+        </section>
+
+        <section>
+            <h2>Security Information</h2>
+
+            <div class="card">
+                <p>InventoryFlow takes security seriously:</p>
+                <ul>
+                    <li><strong>Encrypted Storage:</strong> Your Shopify token is encrypted using AES-256-GCM before being stored locally</li>
+                    <li><strong>PIN Protection:</strong> Your PIN is hashed using SHA-256 — it's never stored in plain text</li>
+                    <li><strong>Local Data:</strong> All credentials are stored locally on your computer, never transmitted to third parties</li>
+                    <li><strong>Read-Only Access:</strong> The app only requests read permissions — it cannot modify your Shopify data</li>
+                </ul>
+            </div>
+
+            <p>For enhanced security in production environments, set the <code>INVENTORYFLOW_SECRET</code> environment variable to a custom encryption key.</p>
+        </section>
+
+        <section>
+            <h2>Quick Reference Checklist</h2>
+            <ul class="checklist">
+                <li>Enable custom app development in Shopify</li>
+                <li>Create a new custom app named "InventoryFlow"</li>
+                <li>Add <code>read_products</code> scope</li>
+                <li>Add <code>read_inventory</code> scope</li>
+                <li>Install the app to your store</li>
+                <li>Copy the Admin API access token</li>
+                <li>Enter credentials in InventoryFlow</li>
+                <li>Create your 4-digit PIN</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>InventoryFlow — Shopify Inventory Management</p>
+            <div class="nav-links">
+                <a href="https://shopify.dev/docs/apps/auth/admin-app-access-tokens" target="_blank">Shopify Documentation</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

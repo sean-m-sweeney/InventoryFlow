@@ -1,0 +1,223 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+env:
+  APP_NAME: InventoryFlow
+  JAVA_VERSION: '21'
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # Import Apple certificates for signing (if secrets are configured)
+      - name: Import Code Signing Certificates
+        if: env.MACOS_CERTIFICATE != ''
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PWD }}
+        run: |
+          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PWD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PWD" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" build.keychain
+          rm certificate.p12
+
+      - name: Create DMG
+        env:
+          APP_VERSION: ${{ steps.version.outputs.VERSION }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          MODULE_PATH="target/lib:target/inventoryflow-1.0.0.jar"
+
+          SIGN_OPTS=""
+          if [ -n "$MACOS_SIGNING_IDENTITY" ]; then
+            SIGN_OPTS="--mac-sign --mac-signing-key-user-name \"$MACOS_SIGNING_IDENTITY\""
+          fi
+
+          ICON_OPTS=""
+          if [ -f "packaging/macos/InventoryFlow.icns" ]; then
+            ICON_OPTS="--icon packaging/macos/InventoryFlow.icns"
+          fi
+
+          jpackage \
+            --type dmg \
+            --name "$APP_NAME" \
+            --app-version "$APP_VERSION" \
+            --vendor "Your Company Name" \
+            --copyright "Copyright 2024 Your Company Name" \
+            --description "Shopify Inventory Management" \
+            --module-path "$MODULE_PATH" \
+            --module com.inventoryflow/com.inventoryflow.App \
+            --dest target/installer \
+            --mac-package-name "$APP_NAME" \
+            --mac-package-identifier "com.inventoryflow" \
+            --java-options "-Dfile.encoding=UTF-8" \
+            $ICON_OPTS \
+            $SIGN_OPTS
+
+      # Notarize (if credentials are configured)
+      - name: Notarize DMG
+        if: env.APPLE_ID != ''
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          DMG_FILE="target/installer/$APP_NAME-$APP_VERSION.dmg"
+          if [ -f "$DMG_FILE" ]; then
+            xcrun notarytool submit "$DMG_FILE" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait
+            xcrun stapler staple "$DMG_FILE"
+          fi
+
+      - name: Rename artifact
+        run: |
+          mv target/installer/*.dmg target/installer/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-macos.dmg
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: target/installer/*.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Create EXE installer
+        shell: cmd
+        env:
+          APP_VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          set MODULE_PATH=target\lib;target\inventoryflow-1.0.0.jar
+
+          jpackage ^
+            --type exe ^
+            --name "%APP_NAME%" ^
+            --app-version "%APP_VERSION%" ^
+            --vendor "Your Company Name" ^
+            --copyright "Copyright 2024 Your Company Name" ^
+            --description "Shopify Inventory Management" ^
+            --module-path "%MODULE_PATH%" ^
+            --module com.inventoryflow/com.inventoryflow.App ^
+            --dest target\installer ^
+            --win-menu ^
+            --win-menu-group "InventoryFlow" ^
+            --win-shortcut ^
+            --win-dir-chooser ^
+            --java-options "-Dfile.encoding=UTF-8"
+
+      # Sign with Azure SignTool (if configured)
+      - name: Sign Windows Installer
+        if: env.AZURE_KEY_VAULT_URI != ''
+        env:
+          AZURE_KEY_VAULT_URI: ${{ secrets.AZURE_KEY_VAULT_URI }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CERT_NAME: ${{ secrets.AZURE_CERT_NAME }}
+        shell: pwsh
+        run: |
+          dotnet tool install --global AzureSignTool
+          $exe = Get-ChildItem -Path "target\installer\*.exe" | Select-Object -First 1
+          AzureSignTool sign -kvu "$env:AZURE_KEY_VAULT_URI" `
+            -kvi "$env:AZURE_CLIENT_ID" `
+            -kvs "$env:AZURE_CLIENT_SECRET" `
+            -kvt "$env:AZURE_TENANT_ID" `
+            -kvc "$env:AZURE_CERT_NAME" `
+            -tr http://timestamp.digicert.com `
+            -td sha256 `
+            $exe.FullName
+
+      - name: Rename artifact
+        shell: bash
+        run: |
+          mv target/installer/*.exe target/installer/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-windows.exe
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: target/installer/*.exe
+
+  create-release:
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            artifacts/macos-dmg/*.dmg
+            artifacts/windows-exe/*.exe

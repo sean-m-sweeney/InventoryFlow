@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.inventoryflow.controller.DashboardController"
+            styleClass="root">
+
+    <!-- Header -->
+    <top>
+        <HBox styleClass="dashboard-header" alignment="CENTER_LEFT" spacing="20">
+            <Label text="InventoryFlow" styleClass="label-title" style="-fx-font-size: 20px;"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <TextField fx:id="searchField" styleClass="search-field, text-field"
+                      promptText="Search by SKU..." onKeyReleased="#handleSearch"/>
+
+            <Button fx:id="syncButton" text="↻ Sync" styleClass="button-sync"
+                    onAction="#handleSync"/>
+
+            <Button text="?" styleClass="button-secondary" onAction="#handleHelp"
+                    style="-fx-padding: 8 12; -fx-background-radius: 15;"/>
+
+            <Button text="Logout" styleClass="button-secondary" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <StackPane>
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Products Table -->
+            <TableView fx:id="productsTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="imageColumn" text="Image" prefWidth="80" sortable="false"/>
+                    <TableColumn fx:id="productNameColumn" text="Product Name" prefWidth="300"/>
+                    <TableColumn fx:id="skuColumn" text="SKU" prefWidth="150"/>
+                    <TableColumn fx:id="inventoryColumn" text="Inventory" prefWidth="100"/>
+                </columns>
+                <placeholder>
+                    <Label text="No products found. Click Sync to load inventory."/>
+                </placeholder>
+            </TableView>
+
+            <!-- Loading Overlay -->
+            <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="15"
+                  visible="false" managed="false"
+                  style="-fx-background-color: rgba(30, 30, 46, 0.9);">
+                <ProgressIndicator prefWidth="50" prefHeight="50"/>
+                <Label fx:id="loadingLabel" text="Loading inventory..." styleClass="label-subtitle"/>
+            </VBox>
+
+            <!-- Error Display -->
+            <VBox fx:id="errorBox" alignment="CENTER" spacing="15"
+                  visible="false" managed="false" styleClass="card" maxWidth="400">
+                <Label text="⚠" style="-fx-font-size: 48px; -fx-text-fill: #ef4444;"/>
+                <Label fx:id="errorMessageLabel" styleClass="label" wrapText="true"
+                       style="-fx-text-alignment: center;"/>
+                <Button text="Retry" onAction="#handleSync"/>
+            </VBox>
+        </StackPane>
+    </center>
+
+    <!-- Footer / Status Bar -->
+    <bottom>
+        <HBox styleClass="dashboard-header" alignment="CENTER_LEFT" spacing="10"
+              style="-fx-padding: 8 20;">
+            <Label fx:id="statusLabel" text="Ready" styleClass="label-subtitle"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="countLabel" text="" styleClass="label-subtitle"/>
+        </HBox>
+    </bottom>
+</BorderPane>

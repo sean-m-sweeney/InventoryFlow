@@ -1,0 +1,28 @@
+# Build output
+target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+
+# macOS
+.DS_Store
+
+# Database (contains credentials)
+*.db
+inventoryflow.db
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Claude Code local settings
+.claude/

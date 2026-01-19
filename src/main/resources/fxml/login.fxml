@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.inventoryflow.controller.LoginController"
+           styleClass="root"
+           prefWidth="800" prefHeight="600">
+
+    <VBox alignment="CENTER" spacing="30" styleClass="login-panel"
+          maxWidth="420" maxHeight="550">
+        <padding>
+            <Insets top="40" right="40" bottom="40" left="40"/>
+        </padding>
+
+        <!-- Logo/Title -->
+        <VBox alignment="CENTER" spacing="8">
+            <Label text="InventoryFlow" styleClass="label-title"/>
+            <Label text="Shopify Inventory Management" styleClass="label-subtitle"/>
+        </VBox>
+
+        <!-- PIN Entry Section -->
+        <VBox fx:id="pinSection" alignment="CENTER" spacing="15" visible="true">
+            <Label fx:id="pinPromptLabel" text="Enter your 4-digit PIN" styleClass="label-subtitle"/>
+            <PasswordField fx:id="pinField" styleClass="pin-field"
+                          promptText="••••" maxWidth="200"
+                          onAction="#handlePinSubmit"/>
+            <Label fx:id="errorLabel" styleClass="label-error" visible="false" managed="false"/>
+            <Button fx:id="submitButton" text="Unlock" onAction="#handlePinSubmit"
+                    prefWidth="200"/>
+        </VBox>
+
+        <!-- Setup Section (shown when no PIN configured) -->
+        <VBox fx:id="setupSection" alignment="CENTER" spacing="15" visible="false" managed="false">
+            <HBox alignment="CENTER" spacing="10">
+                <Label text="Initial Setup" styleClass="label-subtitle"/>
+                <Button text="?" styleClass="button-secondary" onAction="#handleShowSetupGuide"
+                        style="-fx-padding: 2 8; -fx-font-size: 12px; -fx-background-radius: 12;"/></HBox>
+
+            <VBox spacing="8">
+                <Label text="Create a 4-digit PIN"/>
+                <PasswordField fx:id="newPinField" styleClass="pin-field"
+                              promptText="••••" maxWidth="200"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <Label text="Confirm PIN"/>
+                <PasswordField fx:id="confirmPinField" styleClass="pin-field"
+                              promptText="••••" maxWidth="200"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <Label text="Shopify Store Domain"/>
+                <TextField fx:id="shopifyDomainField"
+                          promptText="your-store.myshopify.com" maxWidth="300"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <Label text="Admin API Access Token"/>
+                <PasswordField fx:id="shopifyTokenField"
+                              promptText="shpat_xxxxxxxxxxxxx" maxWidth="300"/>
+            </VBox>
+
+            <Label fx:id="setupErrorLabel" styleClass="label-error" visible="false" managed="false"/>
+
+            <Button text="Complete Setup" onAction="#handleSetup" prefWidth="200"/>
+
+            <Button text="View Setup Guide" styleClass="button-secondary" onAction="#handleShowSetupGuide"
+                    style="-fx-font-size: 12px;"/>
+        </VBox>
+
+        <!-- Loading indicator -->
+        <HBox fx:id="loadingBox" alignment="CENTER" spacing="10" visible="false" managed="false">
+            <ProgressIndicator prefWidth="20" prefHeight="20"/>
+            <Label text="Authenticating..." styleClass="label-subtitle"/>
+        </HBox>
+    </VBox>
+</StackPane>
