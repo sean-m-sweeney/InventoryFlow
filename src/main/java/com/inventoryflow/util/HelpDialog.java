@@ -130,13 +130,11 @@ public class HelpDialog {
         ));
 
         // Step 1
-        content.getChildren().add(createStepCard("1", "Enable Custom App Development",
+        content.getChildren().add(createStepCard("1", "Open Dev Dashboard",
                 "1. Log in to your Shopify Admin\n" +
                 "2. Go to Settings → Apps\n" +
-                "3. Click App and sales channel settings\n" +
-                "4. Click Develop apps\n" +
-                "5. Click Allow custom app development\n\n" +
-                "Note: Only the store owner can enable this feature."
+                "3. Click Build apps in Dev Dashboard\n\n" +
+                "Note: Ignore the \"legacy custom apps\" option - it's being phased out."
         ));
 
         // Step 2
