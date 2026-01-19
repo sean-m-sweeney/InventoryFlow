@@ -43,7 +43,7 @@ jobs:
 
       # Import Apple certificates for signing (if secrets are configured)
       - name: Import Code Signing Certificates
-        if: env.MACOS_CERTIFICATE != ''
+        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
@@ -53,8 +53,9 @@ jobs:
           security create-keychain -p "$KEYCHAIN_PWD" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "$KEYCHAIN_PWD" build.keychain
-          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign -A
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" build.keychain
+          security list-keychains -d user -s build.keychain login.keychain
           rm certificate.p12
 
       - name: Create DMG
@@ -82,6 +83,7 @@ jobs:
 
           if [ -n "$MACOS_SIGNING_IDENTITY" ]; then
             JPACKAGE_CMD="$JPACKAGE_CMD --mac-sign --mac-signing-key-user-name \"$MACOS_SIGNING_IDENTITY\""
+            JPACKAGE_CMD="$JPACKAGE_CMD --mac-signing-keychain $HOME/Library/Keychains/build.keychain-db"
           fi
 
           eval $JPACKAGE_CMD
