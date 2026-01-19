@@ -64,31 +64,27 @@ jobs:
         run: |
           MODULE_PATH="target/lib:target/inventoryflow-1.0.0.jar"
 
-          SIGN_OPTS=""
-          if [ -n "$MACOS_SIGNING_IDENTITY" ]; then
-            SIGN_OPTS="--mac-sign --mac-signing-key-user-name \"$MACOS_SIGNING_IDENTITY\""
-          fi
+          # Build jpackage command
+          JPACKAGE_CMD="jpackage --type dmg --name $APP_NAME --app-version $APP_VERSION"
+          JPACKAGE_CMD="$JPACKAGE_CMD --vendor \"Valley Technology Partners, LLC\""
+          JPACKAGE_CMD="$JPACKAGE_CMD --copyright \"Copyright 2024 Valley Technology Partners, LLC\""
+          JPACKAGE_CMD="$JPACKAGE_CMD --description \"Shopify Inventory Management\""
+          JPACKAGE_CMD="$JPACKAGE_CMD --module-path $MODULE_PATH"
+          JPACKAGE_CMD="$JPACKAGE_CMD --module com.inventoryflow/com.inventoryflow.App"
+          JPACKAGE_CMD="$JPACKAGE_CMD --dest target/installer"
+          JPACKAGE_CMD="$JPACKAGE_CMD --mac-package-name $APP_NAME"
+          JPACKAGE_CMD="$JPACKAGE_CMD --mac-package-identifier com.inventoryflow"
+          JPACKAGE_CMD="$JPACKAGE_CMD --java-options \"-Dfile.encoding=UTF-8\""
 
-          ICON_OPTS=""
           if [ -f "packaging/macos/InventoryFlow.icns" ]; then
-            ICON_OPTS="--icon packaging/macos/InventoryFlow.icns"
+            JPACKAGE_CMD="$JPACKAGE_CMD --icon packaging/macos/InventoryFlow.icns"
           fi
 
-          jpackage \
-            --type dmg \
-            --name "$APP_NAME" \
-            --app-version "$APP_VERSION" \
-            --vendor "Your Company Name" \
-            --copyright "Copyright 2024 Your Company Name" \
-            --description "Shopify Inventory Management" \
-            --module-path "$MODULE_PATH" \
-            --module com.inventoryflow/com.inventoryflow.App \
-            --dest target/installer \
-            --mac-package-name "$APP_NAME" \
-            --mac-package-identifier "com.inventoryflow" \
-            --java-options "-Dfile.encoding=UTF-8" \
-            $ICON_OPTS \
-            $SIGN_OPTS
+          if [ -n "$MACOS_SIGNING_IDENTITY" ]; then
+            JPACKAGE_CMD="$JPACKAGE_CMD --mac-sign --mac-signing-key-user-name \"$MACOS_SIGNING_IDENTITY\""
+          fi
+
+          eval $JPACKAGE_CMD
 
       # Notarize (if credentials are configured)
       - name: Notarize DMG
