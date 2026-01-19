@@ -132,9 +132,10 @@ public class HelpDialog {
         // Step 1
         content.getChildren().add(createStepCard("1", "Enable Custom App Development",
                 "1. Log in to your Shopify Admin\n" +
-                "2. Go to Settings → Apps and sales channels\n" +
-                "3. Click Develop apps at the top\n" +
-                "4. Click Allow custom app development\n\n" +
+                "2. Go to Settings → Apps\n" +
+                "3. Click App and sales channel settings\n" +
+                "4. Click Develop apps\n" +
+                "5. Click Allow custom app development\n\n" +
                 "Note: Only the store owner can enable this feature."
         ));
 
@@ -215,7 +216,7 @@ public class HelpDialog {
                 "Your PIN is hashed and never stored in plain text."));
 
         content.getChildren().add(createHelpSection("❓ Need to Reconnect?",
-                "Delete the inventoryflow.db file and restart the app to " +
+                "Delete ~/.inventoryflow/inventoryflow.db and restart the app to " +
                 "enter new Shopify credentials."));
 
         return content;
