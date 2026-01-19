@@ -104,7 +104,7 @@ jpackage \
     --description "Shopify Inventory Management" \
     --input "$PROJECT_DIR/target/lib" \
     --main-jar "inventoryflow-$APP_VERSION.jar" \
-    --main-class com.inventoryflow.App \
+    --main-class com.inventoryflow.Launcher \
     --dest "$INSTALLER_DIR" \
     --mac-package-name "$APP_NAME" \
     --mac-package-identifier "com.inventoryflow" \

@@ -112,7 +112,7 @@ jobs:
           JPACKAGE_CMD="$JPACKAGE_CMD --description \"Shopify Inventory Management\""
           JPACKAGE_CMD="$JPACKAGE_CMD --input target/lib"
           JPACKAGE_CMD="$JPACKAGE_CMD --main-jar inventoryflow-1.0.0.jar"
-          JPACKAGE_CMD="$JPACKAGE_CMD --main-class com.inventoryflow.App"
+          JPACKAGE_CMD="$JPACKAGE_CMD --main-class com.inventoryflow.Launcher"
           JPACKAGE_CMD="$JPACKAGE_CMD --dest target/installer"
           JPACKAGE_CMD="$JPACKAGE_CMD --mac-package-name $APP_NAME"
           JPACKAGE_CMD="$JPACKAGE_CMD --mac-package-identifier com.inventoryflow"
@@ -222,7 +222,7 @@ jobs:
             --description "Shopify Inventory Management" ^
             --input target\lib ^
             --main-jar inventoryflow-1.0.0.jar ^
-            --main-class com.inventoryflow.App ^
+            --main-class com.inventoryflow.Launcher ^
             --dest target\installer ^
             --win-menu ^
             --win-menu-group "InventoryFlow" ^
