@@ -1,6 +1,10 @@
 package com.inventoryflow.util;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -20,10 +24,20 @@ import javax.crypto.spec.SecretKeySpec;
  * Manages SQLite database operations for storing encrypted credentials.
  */
 public class DatabaseManager {
-    private static final String DB_URL = "jdbc:sqlite:inventoryflow.db";
+    private static final String DB_URL = getDbUrl();
     private static final String ENCRYPTION_KEY_ENV = "INVENTORYFLOW_SECRET";
     private static final int GCM_TAG_LENGTH = 128;
     private static final int GCM_IV_LENGTH = 12;
+
+    private static String getDbUrl() {
+        Path appDir = Paths.get(System.getProperty("user.home"), ".inventoryflow");
+        try {
+            Files.createDirectories(appDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create app directory: " + appDir, e);
+        }
+        return "jdbc:sqlite:" + appDir.resolve("inventoryflow.db").toString();
+    }
 
     private static DatabaseManager instance;
     private Connection connection;
