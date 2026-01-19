@@ -21,6 +21,12 @@ echo -e "${GREEN}========================================${NC}"
 
 cd "$PROJECT_DIR"
 
+# Load signing configuration if available
+if [ -f "$SCRIPT_DIR/signing-config.sh" ]; then
+    echo -e "\n${GREEN}Loading signing configuration...${NC}"
+    source "$SCRIPT_DIR/signing-config.sh"
+fi
+
 # Check for required tools
 echo -e "\n${YELLOW}Checking prerequisites...${NC}"
 
