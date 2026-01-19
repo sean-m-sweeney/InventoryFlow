@@ -41,14 +41,17 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      # Import Apple certificates for signing (if secrets are configured)
+      # Import Apple certificates for signing
       - name: Import Code Signing Certificates
-        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
           KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PWD }}
         run: |
+          if [ -z "$MACOS_CERTIFICATE" ]; then
+            echo "No certificate configured, skipping signing setup"
+            exit 0
+          fi
           echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
           security create-keychain -p "$KEYCHAIN_PWD" build.keychain
           security default-keychain -s build.keychain
@@ -57,6 +60,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" build.keychain
           security list-keychains -d user -s build.keychain login.keychain
           rm certificate.p12
+          echo "Certificate imported successfully"
 
       - name: Create DMG
         env:
@@ -88,23 +92,29 @@ jobs:
 
           eval $JPACKAGE_CMD
 
-      # Notarize (if credentials are configured)
+      # Notarize the DMG
       - name: Notarize DMG
-        if: env.APPLE_ID != ''
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APP_VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
+          if [ -z "$APPLE_ID" ]; then
+            echo "No Apple ID configured, skipping notarization"
+            exit 0
+          fi
           DMG_FILE="target/installer/$APP_NAME-$APP_VERSION.dmg"
           if [ -f "$DMG_FILE" ]; then
+            echo "Submitting for notarization..."
             xcrun notarytool submit "$DMG_FILE" \
               --apple-id "$APPLE_ID" \
               --password "$APPLE_APP_PASSWORD" \
               --team-id "$APPLE_TEAM_ID" \
               --wait
+            echo "Stapling notarization ticket..."
             xcrun stapler staple "$DMG_FILE"
+            echo "Notarization complete"
           fi
 
       - name: Rename artifact
@@ -168,7 +178,6 @@ jobs:
 
       # Sign with Azure SignTool (if configured)
       - name: Sign Windows Installer
-        if: env.AZURE_KEY_VAULT_URI != ''
         env:
           AZURE_KEY_VAULT_URI: ${{ secrets.AZURE_KEY_VAULT_URI }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -177,6 +186,10 @@ jobs:
           AZURE_CERT_NAME: ${{ secrets.AZURE_CERT_NAME }}
         shell: pwsh
         run: |
+          if (-not $env:AZURE_KEY_VAULT_URI) {
+            Write-Host "No Azure Key Vault configured, skipping Windows signing"
+            exit 0
+          }
           dotnet tool install --global AzureSignTool
           $exe = Get-ChildItem -Path "target\installer\*.exe" | Select-Object -First 1
           AzureSignTool sign -kvu "$env:AZURE_KEY_VAULT_URI" `
