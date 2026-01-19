@@ -110,11 +110,27 @@ jobs:
           DMG_FILE="target/installer/$APP_NAME-$APP_VERSION.dmg"
           if [ -f "$DMG_FILE" ]; then
             echo "Submitting for notarization..."
-            xcrun notarytool submit "$DMG_FILE" \
+            # Submit and capture the submission ID
+            SUBMIT_OUTPUT=$(xcrun notarytool submit "$DMG_FILE" \
               --apple-id "$APPLE_ID" \
               --password "$APPLE_APP_PASSWORD" \
               --team-id "$APPLE_TEAM_ID" \
-              --wait
+              --wait 2>&1) || true
+            echo "$SUBMIT_OUTPUT"
+
+            # Extract submission ID and check status
+            SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep -o 'id: [a-f0-9-]*' | head -1 | cut -d' ' -f2)
+            STATUS=$(echo "$SUBMIT_OUTPUT" | grep 'status:' | tail -1 | awk '{print $2}')
+
+            if [ "$STATUS" = "Invalid" ] || [ "$STATUS" = "Rejected" ]; then
+              echo "Notarization failed! Fetching detailed log..."
+              xcrun notarytool log "$SUBMISSION_ID" \
+                --apple-id "$APPLE_ID" \
+                --password "$APPLE_APP_PASSWORD" \
+                --team-id "$APPLE_TEAM_ID"
+              exit 1
+            fi
+
             echo "Stapling notarization ticket..."
             xcrun stapler staple "$DMG_FILE"
             echo "Notarization complete"
