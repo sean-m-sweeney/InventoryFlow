@@ -67,15 +67,18 @@ jobs:
           APP_VERSION: ${{ steps.version.outputs.VERSION }}
           MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
         run: |
-          MODULE_PATH="target/lib:target/inventoryflow-1.0.0.jar"
+          # Copy main JAR to lib directory for unified input
+          cp target/inventoryflow-1.0.0.jar target/lib/
 
-          # Build jpackage command
+          # Build jpackage command using classpath mode (not module mode)
+          # This avoids jlink issues with automatic modules like sqlite-jdbc
           JPACKAGE_CMD="jpackage --type dmg --name $APP_NAME --app-version $APP_VERSION"
           JPACKAGE_CMD="$JPACKAGE_CMD --vendor \"Valley Technology Partners, LLC\""
           JPACKAGE_CMD="$JPACKAGE_CMD --copyright \"Copyright 2024 Valley Technology Partners, LLC\""
           JPACKAGE_CMD="$JPACKAGE_CMD --description \"Shopify Inventory Management\""
-          JPACKAGE_CMD="$JPACKAGE_CMD --module-path $MODULE_PATH"
-          JPACKAGE_CMD="$JPACKAGE_CMD --module com.inventoryflow/com.inventoryflow.App"
+          JPACKAGE_CMD="$JPACKAGE_CMD --input target/lib"
+          JPACKAGE_CMD="$JPACKAGE_CMD --main-jar inventoryflow-1.0.0.jar"
+          JPACKAGE_CMD="$JPACKAGE_CMD --main-class com.inventoryflow.App"
           JPACKAGE_CMD="$JPACKAGE_CMD --dest target/installer"
           JPACKAGE_CMD="$JPACKAGE_CMD --mac-package-name $APP_NAME"
           JPACKAGE_CMD="$JPACKAGE_CMD --mac-package-identifier com.inventoryflow"
@@ -158,17 +161,18 @@ jobs:
         env:
           APP_VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          set MODULE_PATH=target\lib;target\inventoryflow-1.0.0.jar
+          copy target\inventoryflow-1.0.0.jar target\lib\
 
           jpackage ^
             --type exe ^
             --name "%APP_NAME%" ^
             --app-version "%APP_VERSION%" ^
-            --vendor "Your Company Name" ^
-            --copyright "Copyright 2024 Your Company Name" ^
+            --vendor "Valley Technology Partners, LLC" ^
+            --copyright "Copyright 2024 Valley Technology Partners, LLC" ^
             --description "Shopify Inventory Management" ^
-            --module-path "%MODULE_PATH%" ^
-            --module com.inventoryflow/com.inventoryflow.App ^
+            --input target\lib ^
+            --main-jar inventoryflow-1.0.0.jar ^
+            --main-class com.inventoryflow.App ^
             --dest target\installer ^
             --win-menu ^
             --win-menu-group "InventoryFlow" ^

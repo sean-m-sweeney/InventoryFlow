@@ -73,8 +73,8 @@ mvn clean package -DskipTests
 INSTALLER_DIR="$PROJECT_DIR/target/installer"
 mkdir -p "$INSTALLER_DIR"
 
-# Build module path
-MODULE_PATH="$PROJECT_DIR/target/lib:$PROJECT_DIR/target/inventoryflow-$APP_VERSION.jar"
+# Copy main JAR to lib directory for unified input
+cp "$PROJECT_DIR/target/inventoryflow-$APP_VERSION.jar" "$PROJECT_DIR/target/lib/"
 
 # Code signing configuration
 # Set these environment variables for signed builds:
@@ -92,18 +92,19 @@ else
     echo "For distribution, set up code signing - see docs/CODE_SIGNING.md"
 fi
 
-# Run jpackage
+# Run jpackage in classpath mode (avoids jlink issues with automatic modules)
 echo -e "\n${YELLOW}Creating .dmg installer...${NC}"
 
 jpackage \
     --type dmg \
     --name "$APP_NAME" \
     --app-version "$APP_VERSION" \
-    --vendor "Your Company Name" \
-    --copyright "Copyright 2024 Your Company Name" \
+    --vendor "Valley Technology Partners, LLC" \
+    --copyright "Copyright 2024 Valley Technology Partners, LLC" \
     --description "Shopify Inventory Management" \
-    --module-path "$MODULE_PATH" \
-    --module com.inventoryflow/com.inventoryflow.App \
+    --input "$PROJECT_DIR/target/lib" \
+    --main-jar "inventoryflow-$APP_VERSION.jar" \
+    --main-class com.inventoryflow.App \
     --dest "$INSTALLER_DIR" \
     --mac-package-name "$APP_NAME" \
     --mac-package-identifier "com.inventoryflow" \
