@@ -41,8 +41,12 @@ public class DatabaseManager {
 
     private void initializeDatabase() {
         try {
+            // Explicitly load SQLite JDBC driver for modular Java/jpackage compatibility
+            Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection(DB_URL);
             createTables();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("SQLite JDBC driver not found", e);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to initialize database", e);
         }

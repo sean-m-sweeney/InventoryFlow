@@ -4,6 +4,7 @@ module com.inventoryflow {
     requires java.sql;
     requires java.net.http;
     requires com.google.gson;
+    requires org.xerial.sqlitejdbc;
 
     opens com.inventoryflow to javafx.fxml;
     opens com.inventoryflow.controller to javafx.fxml;
